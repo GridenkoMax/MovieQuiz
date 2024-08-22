@@ -2,6 +2,8 @@ import UIKit
 
 final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
+    private var alertPresenter: AlertPresenter!
+    
     private var currentQuestionIndex = 0
     private var correctAnswers = 0
     
@@ -19,11 +21,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        questionFactory = QuestionFactory()
+        questionFactory = QuestionFactory(delegate: self)
         questionFactory?.requestNextQuestion()
-            
-    
-   
+
+        alertPresenter = AlertPresenter(viewController: self)
     }
     // MARK: - QuestionFactoryDelegate
 func didReceiveNextQuestion(question: QuizQuestion?) {
@@ -95,11 +96,17 @@ func didReceiveNextQuestion(question: QuizQuestion?) {
     private func showNextQuestionOrResults() {
         if currentQuestionIndex == questionsAmount - 1 {
             let text = "Ваш результат: \(correctAnswers)/10"
-            let viewModel = QuizResultsViewModel(
+            let alertModel = AlertModel(
                 title: "Этот раунд окончен!",
-                text: text,
-                buttonText: "Сыграть ещё раз")
-            showAlert(quiz: viewModel)
+                message: text,
+                buttonText: "Сыграть ещё раз"
+            ) { [weak self] in
+                guard let self = self else { return }
+                self.currentQuestionIndex = 0
+                self.correctAnswers = 0
+                self.questionFactory?.requestNextQuestion()
+            }
+            alertPresenter.present(alert: alertModel)
         } else {
             currentQuestionIndex += 1
             questionFactory?.requestNextQuestion()
