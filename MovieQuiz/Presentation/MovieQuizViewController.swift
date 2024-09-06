@@ -2,7 +2,7 @@ import UIKit
 
 final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
-    private var alertPresenter: AlertPresenter!
+    private var alertPresenter: AlertPresenter?
     
     private var currentQuestionIndex = 0
     private var correctAnswers = 0
@@ -106,31 +106,12 @@ func didReceiveNextQuestion(question: QuizQuestion?) {
                 self.correctAnswers = 0
                 self.questionFactory?.requestNextQuestion()
             }
-            alertPresenter.present(alert: alertModel)
+            alertPresenter?.present(alert: alertModel)
         } else {
             currentQuestionIndex += 1
             questionFactory?.requestNextQuestion()
         }
     }
-    private func showAlert(quiz result: QuizResultsViewModel) {
-        let alert = UIAlertController(
-            title: result.title,
-            message: result.text,
-            preferredStyle: .alert)
-        
-        let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in
-            guard let self else { return }
-            self.currentQuestionIndex = 0
-            self.correctAnswers = 0
-            
-            questionFactory?.requestNextQuestion()
-        }
-        
-        alert.addAction(action)
-        
-        self.present(alert, animated: true, completion: nil)
-    }
-    
 }
 
 
